@@ -105,15 +105,16 @@ public class JavaUtils {
 
     // On Unix systems, use operating system command to run faster
     // If that does not work out, fallback to the Java IO way
-    if (SystemUtils.IS_OS_UNIX && filter == null) {
-      try {
-        deleteRecursivelyUsingUnixNative(file);
-        return;
-      } catch (IOException e) {
-        logger.warn("Attempt to delete using native Unix OS command failed for path = {}. " +
-                        "Falling back to Java IO way", file.getAbsolutePath(), e);
-      }
-    }
+    // Remove bash rm to reduce dork
+//    if (SystemUtils.IS_OS_UNIX && filter == null) {
+//      try {
+//        deleteRecursivelyUsingUnixNative(file);
+//        return;
+//      } catch (IOException e) {
+//        logger.warn("Attempt to delete using native Unix OS command failed for path = {}. " +
+//                        "Falling back to Java IO way", file.getAbsolutePath(), e);
+//      }
+//    }
 
     deleteRecursivelyUsingJavaIO(file, filter);
   }
