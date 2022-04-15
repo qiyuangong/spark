@@ -36,11 +36,15 @@ import org.apache.commons.crypto.stream.CryptoOutputStream;
 import org.apache.spark.network.util.AbstractFileRegion;
 import org.apache.spark.network.util.ByteArrayReadableChannel;
 import org.apache.spark.network.util.ByteArrayWritableChannel;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Cipher for encryption and decryption.
  */
 public class TransportCipher {
+  private static final Logger LOG = LoggerFactory.getLogger(TransportCipher.class);
+
   @VisibleForTesting
   static final String ENCRYPTION_HANDLER_NAME = "TransportEncryption";
   private static final String DECRYPTION_HANDLER_NAME = "TransportDecryption";
@@ -168,12 +172,19 @@ public class TransportCipher {
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object data) throws Exception {
       ByteBuf buffer = (ByteBuf) data;
+      if (LOG.isDebugEnabled()) {
+        LOG.debug("buffer " + buffer.capacity());
+      }
 
       try {
         if (!isCipherValid) {
           throw new IOException("Cipher is in invalid state.");
         }
         byte[] decryptedData = new byte[buffer.readableBytes()];
+        if (LOG.isDebugEnabled()) {
+          LOG.debug("decryptedData " + decryptedData.length);
+        }
+
         byteChannel.feedData(buffer);
 
         int offset = 0;
@@ -181,6 +192,9 @@ public class TransportCipher {
           // SPARK-25535: workaround for CRYPTO-141.
           try {
             offset += cis.read(decryptedData, offset, decryptedData.length - offset);
+            if (LOG.isDebugEnabled()) {
+              LOG.debug("decryptedData offset " + offset);
+            }
           } catch (InternalError ie) {
             isCipherValid = false;
             throw ie;

@@ -26,6 +26,8 @@ import io.netty.buffer.CompositeByteBuf;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * A customized frame decoder that allows intercepting raw data.
@@ -44,6 +46,8 @@ import io.netty.channel.ChannelInboundHandlerAdapter;
  * to their handle() method.
  */
 public class TransportFrameDecoder extends ChannelInboundHandlerAdapter {
+
+  private static final Logger LOG = LoggerFactory.getLogger(TransportFrameDecoder.class);
 
   public static final String HANDLER_NAME = "frameDecoder";
   private static final int LENGTH_SIZE = 8;
@@ -84,6 +88,9 @@ public class TransportFrameDecoder extends ChannelInboundHandlerAdapter {
       if (interceptor != null) {
         ByteBuf first = buffers.getFirst();
         int available = first.readableBytes();
+        if (LOG.isDebugEnabled()) {
+          LOG.debug("available length " + available);
+        }
         if (feedInterceptor(first)) {
           assert !first.isReadable() : "Interceptor still active but buffer has data.";
         }
@@ -140,6 +147,9 @@ public class TransportFrameDecoder extends ChannelInboundHandlerAdapter {
 
   private ByteBuf decodeNext() {
     long frameSize = decodeFrameSize();
+    if (LOG.isDebugEnabled()) {
+      LOG.debug("frameSize" + frameSize);
+    }
     if (frameSize == UNKNOWN_FRAME_SIZE) {
       return null;
     }
