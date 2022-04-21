@@ -121,6 +121,10 @@ public class TransportFrameDecoder extends ChannelInboundHandlerAdapter {
     // the frame size. Normally, it should be rare to need more than one buffer to read the frame
     // size.
     ByteBuf first = buffers.getFirst();
+
+    if (LOG.isDebugEnabled()) {
+      LOG.debug("first " + first.readableBytes());
+    }
     if (first.readableBytes() >= LENGTH_SIZE) {
       nextFrameSize = first.readLong() - LENGTH_SIZE;
       totalSize -= LENGTH_SIZE;
@@ -130,6 +134,9 @@ public class TransportFrameDecoder extends ChannelInboundHandlerAdapter {
       return nextFrameSize;
     }
 
+    if (LOG.isDebugEnabled()) {
+      LOG.debug("frameLenBuf " + frameLenBuf.readableBytes());
+    }
     while (frameLenBuf.readableBytes() < LENGTH_SIZE) {
       ByteBuf next = buffers.getFirst();
       int toRead = Math.min(next.readableBytes(), LENGTH_SIZE - frameLenBuf.readableBytes());
@@ -137,6 +144,10 @@ public class TransportFrameDecoder extends ChannelInboundHandlerAdapter {
       if (!next.isReadable()) {
         buffers.removeFirst().release();
       }
+    }
+
+    if (LOG.isDebugEnabled()) {
+      LOG.debug("nextFrameSize " + nextFrameSize);
     }
 
     nextFrameSize = frameLenBuf.readLong() - LENGTH_SIZE;
@@ -148,7 +159,7 @@ public class TransportFrameDecoder extends ChannelInboundHandlerAdapter {
   private ByteBuf decodeNext() {
     long frameSize = decodeFrameSize();
     if (LOG.isDebugEnabled()) {
-      LOG.debug("frameSize" + frameSize);
+      LOG.debug("frameSize " + frameSize);
     }
     if (frameSize == UNKNOWN_FRAME_SIZE) {
       return null;
