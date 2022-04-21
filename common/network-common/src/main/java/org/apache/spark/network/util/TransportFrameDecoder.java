@@ -123,10 +123,14 @@ public class TransportFrameDecoder extends ChannelInboundHandlerAdapter {
     ByteBuf first = buffers.getFirst();
 
     if (LOG.isDebugEnabled()) {
-      LOG.debug("first " + first.readableBytes());
+      LOG.debug("first readableBytes " + first.readableBytes());
     }
     if (first.readableBytes() >= LENGTH_SIZE) {
       nextFrameSize = first.readLong() - LENGTH_SIZE;
+      if (LOG.isDebugEnabled()) {
+        LOG.debug("nextFrameSize " + nextFrameSize);
+        LOG.debug("totalSize " + totalSize);
+      }
       totalSize -= LENGTH_SIZE;
       if (!first.isReadable()) {
         buffers.removeFirst().release();

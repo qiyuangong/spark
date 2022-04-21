@@ -321,9 +321,6 @@ public class TransportCipher {
       long totalBytesWritten = 0L;
       do {
         if (currentEncrypted == null) {
-          if (LOG.isDebugEnabled()) {
-            LOG.debug("Encrypt more " + position);
-          }
           encryptMore();
         }
 
@@ -375,6 +372,9 @@ public class TransportCipher {
         throw ie;
       }
 
+      if (LOG.isDebugEnabled()) {
+        LOG.debug("byteEncChannel " + byteEncChannel.length());
+      }
       currentEncrypted = ByteBuffer.wrap(byteEncChannel.getData(),
         0, byteEncChannel.length());
     }
